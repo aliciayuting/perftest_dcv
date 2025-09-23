@@ -48,7 +48,7 @@ bool eval_put_and_forget( ServiceClientAPI& capi,
         capi.put_and_forget(objects.at(now_ns%num_distinct_objects), true);
        
         // log time.
-        TimestampLogger::log(TLT_EC_SENT,capi.get_my_id(),message_id);
+        TimestampLogger::log(TLT_EC_SENT,message_id,capi.get_my_id());
         message_id ++;
     }
 
