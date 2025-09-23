@@ -95,7 +95,8 @@ int main(int argc, char** argv){
     uint32_t my_id = capi.get_my_id();
 
     std::cout << "  creating object pool for receiving results: " << PREFIX << std::endl;
-    auto res = capi.template create_object_pool<UDLS_SUBGROUP_TYPE>(PREFIX,UDL_SUBGROUP_INDEX,HASH,{});
+    std::string obj_pool_name = std::string("/noop_udl");
+    auto res = capi.template create_object_pool<UDLS_SUBGROUP_TYPE>(obj_pool_name,UDL_SUBGROUP_INDEX,HASH,{});
     for (auto& reply_future:res.get()) {
         reply_future.second.get(); // wait for the object pool to be created
     }
