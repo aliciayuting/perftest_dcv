@@ -33,7 +33,7 @@ class NoopOCDPO: public DefaultOffCriticalDataPathObserver {
                                uint32_t worker_id) override {
         
 
-        if (key_string == "finish") {
+        if (key_string == "/finish") {
             TimestampLogger::flush(UDL_TIMESTAMP_FILE);
             return;
         }
