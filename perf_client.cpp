@@ -11,7 +11,7 @@
 #define UDL_SHARD_INDEX 0
 #define CLIENT_TIMESTAMP_FILE "client.dat"
 #define UDLS_SUBGROUP_TYPE VolatileCascadeStoreWithStringKey 
-#define PREFIX    "/noop_udl"
+#define PREFIX    "/noop_udl/"
 
 
 using namespace derecho::cascade;
