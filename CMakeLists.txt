@@ -26,6 +26,10 @@ target_include_directories(noop_udl PRIVATE
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 )
 
+target_compile_definitions(noop_udl PRIVATE
+    UDL_FLAG=40030
+)
+
 add_executable(run_perftest perf_client.cpp)
 target_include_directories(run_perftest PRIVATE
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
@@ -33,9 +37,14 @@ target_include_directories(run_perftest PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 )
+target_link_libraries(run_perftest ${Boost_LIBRARIES} derecho::cascade)
+target_compile_definitions(run_perftest PRIVATE
+    TLT_READY_TO_SEND=10000
+    TLT_EC_SENT=10001
+)
 
 
-add_custom_target(noop_udl ALL
+add_custom_command(TARGET run_perftest POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/cfg
         ${CMAKE_CURRENT_BINARY_DIR}/cfg
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/cfg/layout.json.tmp
@@ -70,5 +79,5 @@ add_custom_target(noop_udl ALL
         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/dfgs.json.tmp
         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/udl_dlls.cfg.tmp
         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/clear_log.sh.tmp
-    COMMENT "Prepare vortex UDLs and group configuration"
+    COMMENT "Prepare noop UDLs"
 )

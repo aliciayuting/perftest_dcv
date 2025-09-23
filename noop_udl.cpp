@@ -8,8 +8,7 @@ namespace cascade{
 
 #define MY_UUID     "48e60f7c-8500-11eb-8755-0242ac110002"
 #define MY_DESC     "Noop UDL for benchmark purposes"
-#define UDL_FLAG    40030
-#define UDL_TIMESTAMP_FILE "udl2.dat"
+#define UDL_TIMESTAMP_FILE "udl.dat"
 
 
 std::string get_uuid() {
@@ -35,7 +34,7 @@ class NoopOCDPO: public DefaultOffCriticalDataPathObserver {
         
 
         if (key_string == "finish") {
-            TimestampLogger::flush(UDL_FLAG);
+            TimestampLogger::flush(UDL_TIMESTAMP_FILE);
             return;
         }
         uint64_t msg_id = object.get_message_id();
@@ -53,6 +52,11 @@ public:
     static auto get() {
         return ocdpo_ptr;
     }
+
+    void set_config(DefaultCascadeContextType* typed_ctxt, const nlohmann::json& config){
+        this->my_id = typed_ctxt->get_service_client_ref().get_my_id();
+    }
+
 };
 
 std::shared_ptr<OffCriticalDataPathObserver> NoopOCDPO::ocdpo_ptr;
@@ -62,9 +66,9 @@ void initialize(ICascadeContext* ctxt) {
 }
 
 std::shared_ptr<OffCriticalDataPathObserver> get_observer(
-        ICascadeContext* ctxt,const nlohmann::json&) {
+        ICascadeContext* ctxt,const nlohmann::json& config) {
     auto typed_ctxt = dynamic_cast<DefaultCascadeContextType*>(ctxt);
-    this->my_id = typed_ctxt->get_service_client_ref().get_my_id();
+    std::static_pointer_cast<NoopOCDPO>(NoopOCDPO::get())->set_config(typed_ctxt,config);
     return NoopOCDPO::get();
 }
 
