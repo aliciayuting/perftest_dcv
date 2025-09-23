@@ -35,10 +35,10 @@ class NoopOCDPO: public DefaultOffCriticalDataPathObserver {
 
         if (key_string == "/finish") {
             TimestampLogger::flush(UDL_TIMESTAMP_FILE);
+            std::cout << "Node " << my_id << " received finish signal from node " << sender << ", flushed logs to " << UDL_TIMESTAMP_FILE << "." <<std::endl;
             return;
         }
         uint64_t msg_id = object.get_message_id();
-        std::cout << "[noop ocdpo]: key_string=" << key_string << ", msg_id is=" << msg_id << std::endl;
         TimestampLogger::log(UDL_FLAG, msg_id, my_id, 0);
     }
 
