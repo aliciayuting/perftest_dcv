@@ -11,7 +11,7 @@
 #define UDL_SHARD_INDEX 0
 #define CLIENT_TIMESTAMP_FILE "client.dat"
 #define UDLS_SUBGROUP_TYPE VolatileCascadeStoreWithStringKey 
-#define PREFIX    "noop_udl/"
+#define PREFIX    "/noop_udl"
 
 
 using namespace derecho::cascade;
@@ -53,7 +53,7 @@ bool eval_put_and_forget( ServiceClientAPI& capi,
     }
 
     // send finish signal
-    std::string key = std::string(PREFIX) + "finish";
+    std::string key = std::string(PREFIX) + "/finish";
     const uint8_t one_byte[] = { static_cast<uint8_t>('0') };
     ObjectWithStringKey finish_obj(key, one_byte, sizeof(one_byte));
     capi.put_and_forget(finish_obj, true);
