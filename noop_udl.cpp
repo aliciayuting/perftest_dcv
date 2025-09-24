@@ -39,7 +39,7 @@ class NoopOCDPO: public DefaultOffCriticalDataPathObserver {
             return;
         }
         uint64_t msg_id = object.get_message_id();
-        TimestampLogger::log(UDL_FLAG, msg_id, my_id, 0);
+        TimestampLogger::log(UDL_FLAG, my_id,msg_id,  0);
     }
 
     static std::shared_ptr<OffCriticalDataPathObserver> ocdpo_ptr;
