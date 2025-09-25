@@ -53,6 +53,7 @@ class InternalPutOCDPO: public DefaultOffCriticalDataPathObserver {
 
         // control read_write_ratio
         while(now_ns < end_ns) {
+            now_ns = get_walltime();
             // we leave 500 ns for loop overhead.
             if (now_ns + 500 < next_ns) {
                 usleep((next_ns - now_ns - 500)/1000); // sleep in microseconds.
