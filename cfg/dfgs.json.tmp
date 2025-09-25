@@ -1,11 +1,17 @@
 [
     {
         "id": "100000000-1aaa-00a0-0000-000000000000",
-        "desc": "Example Dataflow graph with Python UDL",
+        "desc": "Performance Testing",
         "graph": [
             {
                 "pathname": "/noop_udl",
                 "user_defined_logic_list": ["48e60f7c-8500-11eb-8755-0242ac110002"],
+                "user_defined_logic_stateful_list": ["singlethreaded"],
+                "destinations": [{}]
+            },
+            {
+                "pathname": "/internal_udl",
+                "user_defined_logic_list": ["20e60f1b-2522-22aa-2222-0366ac110006"],
                 "user_defined_logic_stateful_list": ["singlethreaded"],
                 "destinations": [{}]
             }

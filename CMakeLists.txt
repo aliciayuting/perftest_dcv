@@ -30,6 +30,18 @@ target_compile_definitions(noop_udl PRIVATE
     UDL_FLAG=40030
 )
 
+add_library(internal_put_udl SHARED internal_put_udl.cpp)
+target_include_directories(internal_put_udl PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
+)
+
+target_compile_definitions(internal_put_udl PRIVATE
+    INTERNAL_CLIENT_READY_TO_SEND=30000
+)
+
 add_executable(run_perftest perf_client.cpp)
 target_include_directories(run_perftest PRIVATE
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
@@ -39,8 +51,8 @@ target_include_directories(run_perftest PRIVATE
 )
 target_link_libraries(run_perftest ${Boost_LIBRARIES} derecho::cascade)
 target_compile_definitions(run_perftest PRIVATE
-    TLT_READY_TO_SEND=10000
-    TLT_EC_SENT=10001
+    EXTERNAL_CLIENT_READY_TO_SEND=10000
+    EXTERNAL_CLIENT_SENT=10001
 )
 
 

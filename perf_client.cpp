@@ -11,7 +11,10 @@
 #define UDL_SHARD_INDEX 0
 #define CLIENT_TIMESTAMP_FILE "client.dat"
 #define UDLS_SUBGROUP_TYPE VolatileCascadeStoreWithStringKey 
-#define PREFIX    "/noop_udl/"
+#define NOOP_PREFIX    "/noop_udl/"
+#define INTERNAL_PREFIX    "/internal_udl/"
+#define INTERNAL_UDL_SUBGROUP_ID 0
+#define INTERNAL_UDL_SHARD_ID 0
 
 
 using namespace derecho::cascade;
@@ -20,9 +23,17 @@ bool eval_put_and_forget( ServiceClientAPI& capi,
                         uint64_t max_operation_per_second,
                         uint64_t duration_secs,
                         uint32_t object_size = 1024) {
+
+    std::cout << "  creating object pool for receiving results: " << NOOP_PREFIX << std::endl;
+    std::string obj_pool_name = std::string(NOOP_PREFIX);
+    auto res = capi.template create_object_pool<UDLS_SUBGROUP_TYPE>(obj_pool_name,UDL_SUBGROUP_INDEX,HASH,{});
+    for (auto& reply_future:res.get()) {
+        reply_future.second.get(); // wait for the object pool to be created
+    }
+
     std::vector<ObjectWithStringKey> objects;
     uint32_t num_distinct_objects = 100;
-    make_workload<std::string, ObjectWithStringKey>(object_size, num_distinct_objects, PREFIX, objects);
+    make_workload<std::string, ObjectWithStringKey>(object_size, num_distinct_objects, NOOP_PREFIX, objects);
 
     uint64_t interval_ns = (max_operation_per_second==0)?0:static_cast<uint64_t>(INT64_1E9/max_operation_per_second);
     uint64_t next_ns = get_walltime();
@@ -43,17 +54,17 @@ bool eval_put_and_forget( ServiceClientAPI& capi,
         // set message id.
         objects.at(now_ns%num_distinct_objects).set_message_id(message_id);
         // log time.
-        TimestampLogger::log(TLT_READY_TO_SEND,capi.get_my_id(),message_id);
+        TimestampLogger::log(EXTERNAL_CLIENT_READY_TO_SEND,capi.get_my_id(),message_id);
         // send it
         capi.put_and_forget(objects.at(now_ns%num_distinct_objects), true);
        
         // log time.
-        TimestampLogger::log(TLT_EC_SENT,capi.get_my_id(),message_id);
+        TimestampLogger::log(EXTERNAL_CLIENT_SENT,capi.get_my_id(),message_id);
         message_id ++;
     }
 
     // send finish signal
-    std::string key = std::string(PREFIX) + "/finish";
+    std::string key = std::string(NOOP_PREFIX) + "/finish";
     const uint8_t one_byte[] = { static_cast<uint8_t>('0') };
     ObjectWithStringKey finish_obj(key, one_byte, sizeof(one_byte));
     capi.put_and_forget(finish_obj, true);
@@ -61,6 +72,22 @@ bool eval_put_and_forget( ServiceClientAPI& capi,
     return true;
 }
 
+
+bool internal_put_and_forget( ServiceClientAPI& capi,
+                        uint64_t max_operation_per_second,
+                        uint64_t duration_secs,
+                        uint32_t object_size = 1024) {
+
+    // send start signal
+    std::string key = std::string(INTERNAL_PREFIX) + "/start";
+    const uint8_t one_byte[] = { static_cast<uint8_t>('0') };
+    ObjectWithStringKey finish_obj(key, one_byte, sizeof(one_byte));
+    capi.put_and_forget<VolatileCascadeStoreWithStringKey>(finish_obj, 
+                                                        INTERNAL_UDL_SUBGROUP_ID, 
+                                                        INTERNAL_UDL_SHARD_ID, true);
+    TimestampLogger::flush(CLIENT_TIMESTAMP_FILE);
+    return true;
+}
 
 
 
@@ -94,12 +121,6 @@ int main(int argc, char** argv){
     ServiceClientAPI& capi = ServiceClientAPI::get_service_client();
     uint32_t my_id = capi.get_my_id();
 
-    std::cout << "  creating object pool for receiving results: " << PREFIX << std::endl;
-    std::string obj_pool_name = std::string("/noop_udl");
-    auto res = capi.template create_object_pool<UDLS_SUBGROUP_TYPE>(obj_pool_name,UDL_SUBGROUP_INDEX,HASH,{});
-    for (auto& reply_future:res.get()) {
-        reply_future.second.get(); // wait for the object pool to be created
-    }
 
     eval_put_and_forget(capi, max_operation_per_second,duration_secs);
 
