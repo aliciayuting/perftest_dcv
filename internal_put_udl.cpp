@@ -79,6 +79,7 @@ class InternalPutOCDPO: public DefaultOffCriticalDataPathObserver {
         typed_ctxt->get_service_client_ref().put_and_forget<VolatileCascadeStoreWithStringKey>(
                                                 finish_obj,
                                                 NEXT_UDL_SUBGROUP_ID, NEXT_UDL_SHARD_ID, true);
+        std::cout << "Node " << my_id << " finished internal put_and_forget test, sent finish signal." << std::endl;
         TimestampLogger::flush(INTERNAL_SENDER_TIMESTAMP_FILE);
     }
 
