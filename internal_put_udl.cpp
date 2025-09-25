@@ -36,7 +36,7 @@ class InternalPutOCDPO: public DefaultOffCriticalDataPathObserver {
                                DefaultCascadeContextType* typed_ctxt,
                                uint32_t worker_id) override {
         
-        uint32_t max_operation_per_second = 1000;
+        uint32_t max_operation_per_second = 500;
         uint64_t duration_secs = 10; // run for 10 seconds
         uint32_t object_size = 1024; // 1 KB objects
 
@@ -49,13 +49,10 @@ class InternalPutOCDPO: public DefaultOffCriticalDataPathObserver {
         uint64_t next_ns = get_walltime();
         uint64_t end_ns = next_ns + duration_secs*1000000000ull;
         uint64_t message_id = 0;
+        uint64_t now_ns = get_walltime();
 
         // control read_write_ratio
-        while(true) {
-            uint64_t now_ns = get_walltime();
-            if (now_ns > end_ns) {
-                break;
-            }
+        while(now_ns < end_ns) {
             // we leave 500 ns for loop overhead.
             if (now_ns + 500 < next_ns) {
                 usleep((next_ns - now_ns - 500)/1000); // sleep in microseconds.
@@ -66,6 +63,7 @@ class InternalPutOCDPO: public DefaultOffCriticalDataPathObserver {
             // log time.
             TimestampLogger::log(INTERNAL_CLIENT_READY_TO_SEND,my_id,message_id);
             // send it
+            // std::cout << "Node " << my_id << " sending message id " << message_id << std::endl;
             typed_ctxt->get_service_client_ref().put_and_forget<VolatileCascadeStoreWithStringKey>(
                                                 objects.at(now_ns%num_distinct_objects),
                                                 NEXT_UDL_SUBGROUP_ID, NEXT_UDL_SHARD_ID, true);
