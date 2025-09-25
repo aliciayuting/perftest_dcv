@@ -82,9 +82,13 @@ bool internal_put_and_forget( ServiceClientAPI& capi,
     std::string key = std::string(INTERNAL_PREFIX) + "/start";
     const uint8_t one_byte[] = { static_cast<uint8_t>('0') };
     ObjectWithStringKey finish_obj(key, one_byte, sizeof(one_byte));
-    capi.put_and_forget<VolatileCascadeStoreWithStringKey>(finish_obj, 
+    auto res = capi.put<VolatileCascadeStoreWithStringKey>(finish_obj, 
                                                         INTERNAL_UDL_SUBGROUP_ID, 
                                                         INTERNAL_UDL_SHARD_ID, true);
+    for (auto& reply_future:res.get()) {
+        reply_future.second.get(); // wait for the object pool to be created
+    }
+
     TimestampLogger::flush(CLIENT_TIMESTAMP_FILE);
     return true;
 }
