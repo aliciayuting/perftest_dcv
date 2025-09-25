@@ -98,8 +98,9 @@ int main(int argc, char** argv){
     uint64_t max_operation_per_second = 100;
     uint64_t duration_secs = 60;
     uint32_t object_size = 1024;
+    bool run_internal_perf = false;
 
-    while ((c = getopt(argc, argv, "r:d:s:")) != -1){
+    while ((c = getopt(argc, argv, "r:d:s:i")) != -1){
         switch(c){
             case 'r':
                 max_operation_per_second = strtoul(optarg,NULL,10);
@@ -110,6 +111,9 @@ int main(int argc, char** argv){
             case 's':
                 object_size = strtoul(optarg,NULL,10);
                 break;
+            case 'i':
+                run_internal_perf = true;
+                break;  
             case '?':
             case 'h':
             default:
@@ -121,8 +125,13 @@ int main(int argc, char** argv){
     ServiceClientAPI& capi = ServiceClientAPI::get_service_client();
     uint32_t my_id = capi.get_my_id();
 
-
-    eval_put_and_forget(capi, max_operation_per_second,duration_secs);
+    if(run_internal_perf) {
+        std::cout << "Running internal put_and_forget performance test..." << std::endl;
+        internal_put_and_forget(capi, max_operation_per_second,duration_secs);
+    }else{
+        std::cout << "Running external put_and_forget performance test..." << std::endl;
+        eval_put_and_forget(capi, max_operation_per_second,duration_secs,object_size);
+    }
 
     return 0;
 }
